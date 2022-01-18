@@ -1,3 +1,7 @@
+//Project module 6 Create VER-WER-PE-LIJK
+//This code is created and adapted by the VER-WER-PE-LIJK team to be able to play games using connected esp8266's and let the modules react to the game states
+//the espnow- section of this code is largely inspired by https://github.com/bnbe-club/esp-now-examples-diy-62 which is under the creative commons license 'CC0 1.0 Universal'
+
 #include<ESP8266WiFi.h>
 #include<espnow.h>
 
@@ -9,9 +13,8 @@
 uint8_t receiverAddress[] = {0x7C, 0x87, 0xCE, 0x81, 0xB6, 0x74};   // CONTROLLER
 
 struct __attribute__((packed)) dataPacket {
-  int sensor1;
-  int sensor2;
-  float sensor3;
+  boolean pressed;
+  int gameState;
 };
 
 void transmissionComplete(uint8_t *receiver_mac, uint8_t transmissionStatus) {
@@ -35,12 +38,10 @@ void dataReceived(uint8_t *senderMac, uint8_t *data, uint8_t dataLength) {
   
   memcpy(&packet, data, sizeof(packet));
   
-  Serial.print("sensor1: ");
-  Serial.println(packet.sensor1);
-  Serial.print("sensor2: ");
-  Serial.println(packet.sensor2);
-  Serial.print("sensor3: ");
-  Serial.println(packet.sensor3);
+  Serial.print("pressed: ");
+  Serial.println(packet.pressed);
+  Serial.print("gameState: ");
+  Serial.println(packet.gameState);
 }
  
 void setup() {
@@ -71,11 +72,8 @@ void setup() {
 void loop() {
   dataPacket packet;
   
-  packet.sensor1 = 789;
-  packet.sensor2 = 1011;
-  packet.sensor3 = 6.28;
-
- esp_now_send(receiverAddress, (uint8_t *) &packet, sizeof(packet));
-
+  packet.pressed=false;
+  packet.gameState=0;
+  esp_now_send(receiverAddress, (uint8_t *) &packet, sizeof(packet));
   delay(3000);
 }
