@@ -5,7 +5,7 @@
 #define RECEIVER_ROLE   ESP_NOW_ROLE_COMBO              // set the role of the receiver
 #define WIFI_CHANNEL    1
 
-#define MY_NAME         "Light ring1"
+#define MY_NAME         "Light ring"
 uint8_t receiverAddress[] = {0x7C, 0x87, 0xCE, 0x81, 0xB6, 0x74};   // CONTROLLER
 
 struct __attribute__((packed)) dataPacket {
@@ -75,7 +75,7 @@ void loop() {
   packet.sensor2 = 1011;
   packet.sensor3 = 6.28;
 
-//  esp_now_send(receiverAddress, (uint8_t *) &packet, sizeof(packet));
+ esp_now_send(receiverAddress, (uint8_t *) &packet, sizeof(packet));
 
   delay(3000);
 }
