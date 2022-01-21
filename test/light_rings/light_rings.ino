@@ -1,13 +1,12 @@
 //Project module 6 Create VER-WER-PE-LIJK
 //This code is created and adapted by the VER-WER-PE-LIJK team to be able to play games using connected esp8266's and let the modules react to the game states
 //the espnow- section of this code is largely inspired by https://github.com/bnbe-club/esp-now-examples-diy-62 which is under the creative commons license 'CC0 1.0 Universal'
+//Fade in / Fade out LED animations inspired by https://gist.github.com/marmilicious/f86b39d8991e1efcfd9fbd90dcdf751b made by Scott Kletzien
 
+//ESP Now Connectifity
 #include<ESP8266WiFi.h>
 #include<espnow.h>
-<<<<<<< Updated upstream
 
-=======
->>>>>>> Stashed changes
 #define WIFI_CHANNEL    1
 
 #define buttonPin 4
@@ -55,11 +54,16 @@ void dataReceived(uint8_t *senderMac, uint8_t *data, uint8_t dataLength) {
   Serial.print("gameState: ");
   Serial.println(packet.gameState);
   gameState=packet.gameState;
-}
- 
+} 
+
 void setup() {
   Serial.begin(115200);     // initialize serial port
+  // initialize the pushbutton pin as an input
+  pinMode(buttonPin, INPUT);
+  // Initialize FastLED on pin
+  FastLED.addLeds<WS2811, 2, GRB>(leds, NUM_LEDS);
 
+  //ESP NOW
   Serial.println();
   Serial.println();
   Serial.println();
@@ -73,31 +77,29 @@ void setup() {
 
   if(esp_now_init() != 0) {
     Serial.println("ESP-NOW initialization failed");
+   // effect = 1 //LED effect that no connection had been made
     return;
-  }
+  } else {
+   // effect = 2 //LED effect that connection has been made
+    }
 
   esp_now_set_self_role(ESP_NOW_ROLE_COMBO);   
   esp_now_register_send_cb(transmissionComplete);         // this function will get called once all data is sent
   esp_now_register_recv_cb(dataReceived);               // this function will get called whenever we receive data
   esp_now_add_peer(receiverAddress, ESP_NOW_ROLE_COMBO, WIFI_CHANNEL, NULL, 0);
 
-  Serial.println("Initialized.");
+  Serial.println("ESP-NOW Initialized.");
 }
 
 void loop() {
   if (millis() - startTime >= interval) {
-<<<<<<< Updated upstream
-    startTime = millis();
-=======
   startTime = millis();
->>>>>>> Stashed changes
   dataPacket packet;
   
   packet.pressed = iAmPressed;
   packet.gameState = gameState;
   esp_now_send(receiverAddress, (uint8_t *) &packet, sizeof(packet));
-<<<<<<< Updated upstream
-=======
+
   iAmPressed=false;
   }
   if(digitalRead(buttonPin)){
@@ -121,7 +123,6 @@ void updateLedColors(){
       leds[i]=CRGB::Blue;
       }
     }break;
->>>>>>> Stashed changes
   }
   FastLED.show();
 }
