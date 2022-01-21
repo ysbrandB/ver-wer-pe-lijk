@@ -43,13 +43,9 @@ void dataReceived(uint8_t *senderMac, uint8_t *data, uint8_t dataLength) {
   Serial.print("gameState: ");
   Serial.println(packet.gameState);
 }
-
-const int buttonPin = 4; 
  
 void setup() {
   Serial.begin(115200);     // initialize serial port
-
-  pinMode(buttonPin, INPUT);
 
   Serial.println();
   Serial.println();
@@ -74,29 +70,10 @@ void setup() {
 }
 
 void loop() {
-  detect();
-  send_packet();
-}
-
-void send_packet(){
   dataPacket packet;
   
   packet.pressed=false;
   packet.gameState=0;
   esp_now_send(receiverAddress, (uint8_t *) &packet, sizeof(packet));
   delay(3000);
-}
-
-void detect(){
-  // read the state of the pushbutton value
-  buttonState = digitalRead(buttonPin);
-  // check if the pushbutton is pressed.
-  // if it is, the buttonState is HIGH
-  if (buttonState == HIGH) {
-    digitalWrite(indicatorPin, HIGH);
-    pressed = true;
-  } else {
-    digitalWrite(indicatorPin, LOW);
-    //pressed = false;
-  }
 }
