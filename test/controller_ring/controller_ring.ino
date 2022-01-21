@@ -5,7 +5,6 @@
 #include<espnow.h>
 
 #define WIFI_CHANNEL    1
-
 #define MAX_MESSAGE_LENGTH 12
 #define MY_NAME         "CONTROLLER NODE"
 #define membersof(x) (sizeof(x) / sizeof(x[0]))
@@ -23,12 +22,15 @@ struct __attribute__((packed)) dataPacket {
 
 float startTime;
 float interval = 3000;
-int gameState=0;
+int gameState=1;
 boolean iAmPressed=false;
+int pressedThisGame=0;
+int totalConnected;
 
 void transmissionComplete(uint8_t *receiver_mac, uint8_t transmissionStatus) {
   if (transmissionStatus == 0) {
     Serial.println("Data sent successfully");
+    totalConnected+=1;
   } else {
     Serial.print("Error code: ");
     Serial.println(transmissionStatus);
@@ -49,6 +51,9 @@ void dataReceived(uint8_t *senderMac, uint8_t *data, uint8_t dataLength) {
 
   Serial.print("pressed: ");
   Serial.println(packet.pressed);
+  if(packet.pressed){
+    pressedThisGame+=1;
+   }
   Serial.print("gameState: ");
   Serial.println(packet.gameState);
 }
@@ -88,7 +93,10 @@ void loop() {
 
     packet.pressed = iAmPressed;
     packet.gameState = gameState;
-
+    Serial.println("Connected:"+String(totalConnected));
+    Serial.println("totalPressed:"+String(pressedThisGame));
+    totalConnected=0;
+    pressedThisGame=0;
     for (int i = 0; i < membersof(receiverAddresses); i++) {
       esp_now_send(receiverAddresses[i], (uint8_t *) &packet, sizeof(packet));
     }
