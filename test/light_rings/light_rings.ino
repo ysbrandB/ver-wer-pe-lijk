@@ -17,7 +17,7 @@ uint8_t receiverAddress[] = {0x7C, 0x87, 0xCE, 0x81, 0xB6, 0x74};   // CONTROLLE
 const int NUM_LEDS = 51;
 const int DATA_PIN = 2;
 CRGB leds[NUM_LEDS];
-
+CHSV myColor;
 struct __attribute__((packed)) dataPacket {
   boolean pressed;
   int gameState;
@@ -30,7 +30,8 @@ boolean effectSwitch = false;
 float interval = 3000;
 int gameState = 0;
 boolean iAmPressed = false;
-
+float gHue = 0;
+int currentLed = 0;
 void transmissionComplete(uint8_t *receiver_mac, uint8_t transmissionStatus) {
   if (transmissionStatus == 0) {
     Serial.println("Data sent successfully");
@@ -60,6 +61,9 @@ void dataReceived(uint8_t *senderMac, uint8_t *data, uint8_t dataLength) {
   if (gameState != packet.gameState) {
     iAmPressed = false;
     gameState = packet.gameState;
+    if (gameState == 3) {
+      myColor = CHSV(random(100, 255), 255, 255);
+    }
   }
 }
 
@@ -96,7 +100,6 @@ void setup() {
   esp_now_register_send_cb(transmissionComplete);         // this function will get called once all data is sent
   esp_now_register_recv_cb(dataReceived);               // this function will get called whenever we receive data
   esp_now_add_peer(receiverAddress, ESP_NOW_ROLE_COMBO, WIFI_CHANNEL, NULL, 0);
-
   Serial.println("ESP-NOW Initialized.");
 }
 
@@ -125,10 +128,8 @@ void updateLedColors() {
           for (int i = 0; i <= NUM_LEDS; i++) {
             if (effectSwitch) {
               leds[i] = CRGB::Red;
-              Serial.println("RED");
             } else {
               leds[i] = CRGB::Black;
-              Serial.println("BLACK");
             }
           }
           effectTimer = 2000;
@@ -150,6 +151,30 @@ void updateLedColors() {
           }
           effectTimer = 100;
         } break;
+      case 3: {
+          for (int i = 0; i <= NUM_LEDS; i++) {
+            leds[i] = myColor;
+          }
+          effectTimer = 100;
+        } break;
+      case 4: {
+          fill_rainbow( leds, NUM_LEDS, gHue, 7);
+          gHue++;
+          effectTimer = 10;
+        } break;
+      case 5: {
+          if (currentLed == 0) {
+            leds[0] = CHSV(random(100, 255), 255, 255);
+          }
+          else {
+            leds[currentLed] = leds[currentLed - 1];
+          }
+          currentLed++;
+          if (currentLed >= NUM_LEDS-1) {
+            currentLed = 0;
+          }
+          effectTimer = random(10,30);
+        }
     }
   }
   FastLED.show();
