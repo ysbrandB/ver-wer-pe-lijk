@@ -25,8 +25,8 @@ struct __attribute__((packed)) dataPacket {
 
 float startTime;
 float effectTimer;
-float effectLastMillis=0;
-boolean effectSwitch=false;
+float effectLastMillis = 0;
+boolean effectSwitch = false;
 float interval = 3000;
 int gameState = 0;
 boolean iAmPressed = false;
@@ -36,7 +36,7 @@ void transmissionComplete(uint8_t *receiver_mac, uint8_t transmissionStatus) {
     Serial.println("Data sent successfully");
   } else {
     Serial.print("Error code: ");
-    gameState=0;
+    gameState = 0;
     Serial.println(transmissionStatus);
   }
 }
@@ -86,7 +86,7 @@ void setup() {
 
   if (esp_now_init() != 0) {
     Serial.println("ESP-NOW initialization failed");
-    gameState=0;
+    gameState = 0;
     return;
   } else {
     // effect = 2 //LED effect that connection has been made
@@ -116,12 +116,12 @@ void loop() {
 }
 
 void updateLedColors() {
-  if (millis()-effectLastMillis >= effectTimer) {
-    effectLastMillis=millis();
-    if(effectSwitch)effectSwitch=false;
-    else effectSwitch=true;
+  if (millis() - effectLastMillis >= effectTimer) {
+    effectLastMillis = millis();
+    if (effectSwitch)effectSwitch = false;
+    else effectSwitch = true;
     switch (gameState) {
-      case 0: {
+      case 0: {//not connected
           for (int i = 0; i <= NUM_LEDS; i++) {
             if (effectSwitch) {
               leds[i] = CRGB::Red;
@@ -133,18 +133,24 @@ void updateLedColors() {
           }
           effectTimer = 2000;
         } break;
-      case 1: {
+      case 1: {//connected idle
           for (int i = 0; i <= NUM_LEDS; i++) {
             leds[i] = CRGB::Green;
           }
         } break;
-      case 2: {
-          for (int i = 0; i <= NUM_LEDS; i++) {
-            leds[i] = CRGB::Blue;
+      case 2: {//game 1 all for the team
+          if (iAmPressed) {
+            for (int i = 0; i <= NUM_LEDS; i++) {
+              leds[i] = CRGB::Blue;
+            }
+          } else {
+            for (int i = 0; i <= NUM_LEDS; i++) {
+              leds[i] = CRGB::Orange;
+            }
           }
+          effectTimer = 100;
         } break;
     }
   }
-
   FastLED.show();
 }
