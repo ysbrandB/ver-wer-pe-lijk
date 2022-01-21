@@ -5,8 +5,6 @@
 #include<ESP8266WiFi.h>
 #include<espnow.h>
 
-#define MY_ROLE         ESP_NOW_ROLE_COMBO              // set the role of this device: CONTROLLER, SLAVE, COMBO
-#define RECEIVER_ROLE   ESP_NOW_ROLE_COMBO              // set the role of the receiver
 #define WIFI_CHANNEL    1
 
 #define MY_NAME         "Light ring"
@@ -16,6 +14,11 @@ struct __attribute__((packed)) dataPacket {
   boolean pressed;
   int gameState;
 };
+
+float startTime;
+float interval = 3000;
+int gameState=0;
+boolean iAmPressed=false;
 
 void transmissionComplete(uint8_t *receiver_mac, uint8_t transmissionStatus) {
   if(transmissionStatus == 0) {
@@ -61,19 +64,21 @@ void setup() {
     return;
   }
 
-  esp_now_set_self_role(MY_ROLE);   
+  esp_now_set_self_role(ESP_NOW_ROLE_COMBO);   
   esp_now_register_send_cb(transmissionComplete);         // this function will get called once all data is sent
   esp_now_register_recv_cb(dataReceived);               // this function will get called whenever we receive data
-  esp_now_add_peer(receiverAddress, RECEIVER_ROLE, WIFI_CHANNEL, NULL, 0);
+  esp_now_add_peer(receiverAddress, ESP_NOW_ROLE_COMBO, WIFI_CHANNEL, NULL, 0);
 
   Serial.println("Initialized.");
 }
 
 void loop() {
+  if (millis() - startTime >= interval) {
+    startTime = millis();
   dataPacket packet;
   
-  packet.pressed=false;
-  packet.gameState=0;
+  packet.pressed = iAmPressed;
+  packet.gameState = gameState;
   esp_now_send(receiverAddress, (uint8_t *) &packet, sizeof(packet));
-  delay(3000);
+  }
 }
