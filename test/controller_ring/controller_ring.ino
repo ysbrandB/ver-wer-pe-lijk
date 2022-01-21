@@ -12,7 +12,6 @@
 
 uint8_t receiverAddresses[][8] =
 { {0xBC, 0xFF, 0x4D, 0x81, 0x8A, 0xCA}
-  ,  {0xBC, 0xDD, 0xC2, 0x9C, 0x3F, 0xF2}
   ,  {0xBC, 0xDD, 0xC2, 0x9C, 0x3F, 0xF2},
   {0xBC, 0xFF, 0x4D, 0x81, 0x7B, 0x8C}
 };
@@ -27,10 +26,6 @@ float interval = 3000;
 int gameState=0;
 boolean iAmPressed=false;
 
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 void transmissionComplete(uint8_t *receiver_mac, uint8_t transmissionStatus) {
   if (transmissionStatus == 0) {
     Serial.println("Data sent successfully");
@@ -93,13 +88,6 @@ void loop() {
 
     packet.pressed = iAmPressed;
     packet.gameState = gameState;
-<<<<<<< Updated upstream
-
-    for (int i = 0; i < membersof(receiverAddresses); i++) {
-      esp_now_send(receiverAddresses[i], (uint8_t *) &packet, sizeof(packet));
-    }
-  }
-=======
 
     for (int i = 0; i < membersof(receiverAddresses); i++) {
       esp_now_send(receiverAddresses[i], (uint8_t *) &packet, sizeof(packet));
@@ -137,5 +125,4 @@ void updateSerial(){
      message_pos = 0;
    }
  }
->>>>>>> Stashed changes
 }
