@@ -4,11 +4,20 @@
 
 #include<ESP8266WiFi.h>
 #include<espnow.h>
+<<<<<<< Updated upstream
 
+=======
+>>>>>>> Stashed changes
 #define WIFI_CHANNEL    1
 
+#define buttonPin 4
 #define MY_NAME         "Light ring"
 uint8_t receiverAddress[] = {0x7C, 0x87, 0xCE, 0x81, 0xB6, 0x74};   // CONTROLLER
+
+#include <FastLED.h>
+const int NUM_LEDS = 51;
+const int DATA_PIN = 2;
+CRGB leds[NUM_LEDS];
 
 struct __attribute__((packed)) dataPacket {
   boolean pressed;
@@ -45,6 +54,7 @@ void dataReceived(uint8_t *senderMac, uint8_t *data, uint8_t dataLength) {
   Serial.println(packet.pressed);
   Serial.print("gameState: ");
   Serial.println(packet.gameState);
+  gameState=packet.gameState;
 }
  
 void setup() {
@@ -54,6 +64,8 @@ void setup() {
   Serial.println();
   Serial.println();
   Serial.print(MY_NAME);
+  pinMode(buttonPin, INPUT);
+  FastLED.addLeds<WS2811, DATA_PIN, GRB>(leds, NUM_LEDS);
   Serial.println("...initializing...");
 
   WiFi.mode(WIFI_STA);
@@ -74,11 +86,42 @@ void setup() {
 
 void loop() {
   if (millis() - startTime >= interval) {
+<<<<<<< Updated upstream
     startTime = millis();
+=======
+  startTime = millis();
+>>>>>>> Stashed changes
   dataPacket packet;
   
   packet.pressed = iAmPressed;
   packet.gameState = gameState;
   esp_now_send(receiverAddress, (uint8_t *) &packet, sizeof(packet));
+<<<<<<< Updated upstream
+=======
+  iAmPressed=false;
   }
+  if(digitalRead(buttonPin)){
+    iAmPressed=true;
+   }
+   Serial.println(iAmPressed);
+   updateLedColors();
+}
+
+void updateLedColors(){
+  switch(gameState){
+    case 0:{for(int i; i<NUM_LEDS; i++){
+      leds[i]=CRGB::Red;
+      }
+    }break;
+    case 1:{for(int i; i<NUM_LEDS; i++){
+      leds[i]=CRGB::Green;
+      }
+    }break;
+      case 2:{for(int i; i<NUM_LEDS; i++){
+      leds[i]=CRGB::Blue;
+      }
+    }break;
+>>>>>>> Stashed changes
+  }
+  FastLED.show();
 }
