@@ -15,6 +15,8 @@ uint8_t receiverAddresses[][8] =
   {0xBC, 0xFF, 0x4D, 0x81, 0x7B, 0x8C}
 };
 
+String receivedMacAdresses[membersof(receiverAddresses)];
+
 struct __attribute__((packed)) dataPacket {
   boolean pressed;
   int gameState;
@@ -22,15 +24,15 @@ struct __attribute__((packed)) dataPacket {
 
 float startTime;
 float interval = 3000;
-int gameState=1;
-boolean iAmPressed=false;
-int pressedThisGame=0;
+int gameState = 1;
+boolean iAmPressed = false;
+int pressedThisGame = 0;
 int totalConnected;
 
 void transmissionComplete(uint8_t *receiver_mac, uint8_t transmissionStatus) {
   if (transmissionStatus == 0) {
     Serial.println("Data sent successfully");
-    totalConnected+=1;
+    totalConnected += 1;
   } else {
     Serial.print("Error code: ");
     Serial.println(transmissionStatus);
@@ -46,16 +48,24 @@ void dataReceived(uint8_t *senderMac, uint8_t *data, uint8_t dataLength) {
   Serial.println();
   Serial.print("Received data from: ");
   Serial.println(macStr);
-
   memcpy(&packet, data, sizeof(packet));
 
-  Serial.print("pressed: ");
-  Serial.println(packet.pressed);
-  if(packet.pressed){
-    pressedThisGame+=1;
-   }
-  Serial.print("gameState: ");
-  Serial.println(packet.gameState);
+  if (packet.pressed) {
+    for (int i = 0; i < membersof(receivedMacAdresses); i++) {
+      if (receivedMacAdresses[i].equals(macStr)) {
+        break;
+      }
+      else if (receivedMacAdresses[i] == NULL) {
+        receivedMacAdresses[i] = macStr;
+        break;
+      }
+    }
+  }
+
+//  Serial.print("pressed: ");
+//  Serial.println(packet.pressed);
+//  Serial.print("gameState: ");
+//  Serial.println(packet.gameState);
 }
 
 void setup() {
@@ -90,13 +100,23 @@ void loop() {
     startTime = millis();
 
     dataPacket packet;
-
     packet.pressed = iAmPressed;
     packet.gameState = gameState;
-    Serial.println("Connected:"+String(totalConnected));
-    Serial.println("totalPressed:"+String(pressedThisGame));
-    totalConnected=0;
+    Serial.println("Connected:" + String(totalConnected));
+    Serial.println("");
     pressedThisGame=0;
+    for (int i = 0; i < membersof(receivedMacAdresses); i++) {
+      if (receivedMacAdresses[i] != NULL) {
+        Serial.println("THIS ONE IS PRESSED " + String(receivedMacAdresses[i]));
+       
+        pressedThisGame += 1;
+        receivedMacAdresses[i]="";
+      }
+    }
+    Serial.println("totalPressed:" + String(pressedThisGame));
+    Serial.println("gameState: "+String(gameState));
+    Serial.println("");
+    totalConnected = 0;
     for (int i = 0; i < membersof(receiverAddresses); i++) {
       esp_now_send(receiverAddresses[i], (uint8_t *) &packet, sizeof(packet));
     }
@@ -104,33 +124,33 @@ void loop() {
   updateSerial();
 }
 
-void updateSerial(){
+void updateSerial() {
   //Check to see if anything is available in the serial receive buffer
- while (Serial.available() > 0)
- {
-   //Create a place to hold the incoming message
-   static char message[MAX_MESSAGE_LENGTH];
-   static unsigned int message_pos = 0;
+  while (Serial.available() > 0)
+  {
+    //Create a place to hold the incoming message
+    static char message[MAX_MESSAGE_LENGTH];
+    static unsigned int message_pos = 0;
 
-   //Read the next available byte in the serial receive buffer
-   char inByte = Serial.read();
+    //Read the next available byte in the serial receive buffer
+    char inByte = Serial.read();
 
-   //Message coming in (check not terminating character) and guard for over message size
-   if ( inByte != '\n' && (message_pos < MAX_MESSAGE_LENGTH - 1) )
-   {
-     //Add the incoming byte to our message
-     message[message_pos] = inByte;
-     message_pos++;
-   }
-   //Full message received...
-   else
-   {
-     //Add null character to string
-     message[message_pos] = '\0';
-     gameState= atoi(message);
-     Serial.println(gameState);
-     //Reset for the next message
-     message_pos = 0;
-   }
- }
+    //Message coming in (check not terminating character) and guard for over message size
+    if ( inByte != '\n' && (message_pos < MAX_MESSAGE_LENGTH - 1) )
+    {
+      //Add the incoming byte to our message
+      message[message_pos] = inByte;
+      message_pos++;
+    }
+    //Full message received...
+    else
+    {
+      //Add null character to string
+      message[message_pos] = '\0';
+      gameState = atoi(message);
+      Serial.println(gameState);
+      //Reset for the next message
+      message_pos = 0;
+    }
+  }
 }

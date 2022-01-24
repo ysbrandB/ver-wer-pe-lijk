@@ -30,6 +30,7 @@ boolean effectSwitch = false;
 float interval = 3000;
 int gameState = 0;
 boolean iAmPressed = false;
+int framesPressed = 0;
 float gHue = 0;
 int currentLed = 0;
 void transmissionComplete(uint8_t *receiver_mac, uint8_t transmissionStatus) {
@@ -113,8 +114,16 @@ void loop() {
     esp_now_send(receiverAddress, (uint8_t *) &packet, sizeof(packet));
   }
   if (digitalRead(buttonPin)) {
+    framesPressed++;
+  } else {
+    framesPressed = 0;
+  }
+  if (framesPressed > 10) {
     iAmPressed = true;
   }
+  
+  Serial.println(iAmPressed);
+  Serial.println(framesPressed);
   updateLedColors();
 }
 
@@ -170,10 +179,10 @@ void updateLedColors() {
             leds[currentLed] = leds[currentLed - 1];
           }
           currentLed++;
-          if (currentLed >= NUM_LEDS-1) {
+          if (currentLed >= NUM_LEDS - 1) {
             currentLed = 0;
           }
-          effectTimer = random(10,30);
+          effectTimer = random(10, 30);
         }
     }
   }
