@@ -33,6 +33,7 @@ boolean iAmPressed = false;
 int framesPressed = 0;
 float gHue = 0;
 int currentLed = 0;
+int rainbowfunTimer = 0;
 void transmissionComplete(uint8_t *receiver_mac, uint8_t transmissionStatus) {
   if (transmissionStatus == 0) {
     Serial.println("Data sent successfully");
@@ -62,9 +63,6 @@ void dataReceived(uint8_t *senderMac, uint8_t *data, uint8_t dataLength) {
   if (gameState != packet.gameState) {
     iAmPressed = false;
     gameState = packet.gameState;
-    if (gameState == 3) {
-      myColor = CHSV(random(100, 255), 255, 255);
-    }
   }
 }
 
@@ -116,10 +114,13 @@ void loop() {
   } else {
     framesPressed = 0;
   }
-  if (framesPressed > 10) {
+  if (framesPressed > 10 && !iAmPressed && gameState!=8) {
     iAmPressed = true;
+    if (gameState == 6) {
+      rainbowfunTimer = 6000;
+    }
   }
-  
+
   Serial.println(iAmPressed);
   Serial.println(framesPressed);
   updateLedColors();
@@ -153,18 +154,22 @@ void updateLedColors() {
             }
           } else {
             for (int i = 0; i <= NUM_LEDS; i++) {
-              leds[i] = CRGB::Orange;
+              leds[i] = CRGB::Red;
             }
           }
           effectTimer = 100;
         } break;
-      case 3: {
-          for (int i = 0; i <= NUM_LEDS; i++) {
-            leds[i] = myColor;
+      case 3: {//colorfun
+          if (iAmPressed) {
+            CRGB randomColor = CHSV(random(100, 255), 255, 255);
+            for (int i = 0; i <= NUM_LEDS; i++) {
+              leds[i] = randomColor;
+            }
+            iAmPressed = false;
           }
-          effectTimer = 100;
+          effectTimer = 300;
         } break;
-      case 4: {
+      case 4: {//rainbow effect
           fill_rainbow( leds, NUM_LEDS, gHue, 7);
           gHue++;
           effectTimer = 10;
@@ -181,8 +186,42 @@ void updateLedColors() {
             currentLed = 0;
           }
           effectTimer = random(10, 30);
+        }break;
+      case 6: { //rainbowfun
+          if (iAmPressed) {
+            if (effectSwitch) {
+              effectSwitch = false;
+            } else {
+              effectSwitch = true;
+            }
+            for (int i = 0; i < NUM_LEDS; i++) {
+              if (effectSwitch) {
+                leds[i] = CRGB::White;
+              } else {
+                leds[i] = CRGB::Black;
+              }
+            }
+            effectTimer = 500;
+            } else {
+              fill_rainbow( leds, NUM_LEDS, gHue, 7);
+              gHue++;
+              effectTimer = 10;
+            }
+          }
+          break;
+        case 7: {//mole 1
+             for (int i = 0; i <= NUM_LEDS; i++) {
+              leds[i] = CRGB::Red;
+            }
+            effectTimer = 10;
+          }break;
+          case 8: {//mole 2
+           for (int i = 0; i <= NUM_LEDS; i++) {
+              leds[i] = CRGB::Green;
+            }
+            effectTimer = 10;
+          }break;
         }
     }
+    FastLED.show();
   }
-  FastLED.show();
-}
