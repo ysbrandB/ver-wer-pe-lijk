@@ -93,8 +93,6 @@ void setup() {
     Serial.println("ESP-NOW initialization failed");
     gameState = 0;
     return;
-  } else {
-    // effect = 2 //LED effect that connection has been made
   }
 
   esp_now_set_self_role(ESP_NOW_ROLE_COMBO);
