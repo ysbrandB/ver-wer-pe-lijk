@@ -191,12 +191,12 @@ void updateLedColors() {
           if (iAmPressed) {
             for (int i = 0; i < NUM_LEDS; i++) {
               if (effectSwitch) {
-                leds[i] = CRGB::White;
+                leds[i] = CRGB::DeepPink;
               } else {
                 leds[i] = CRGB::Black;
               }
             }
-            effectTimer = 500;
+            effectTimer = 2000;
             } else {
               fill_rainbow( leds, NUM_LEDS, gHue, 7);
               gHue++;
@@ -204,13 +204,13 @@ void updateLedColors() {
             }
           }
           break;
-        case 7: {//mole 1
+        case 7: {//mole
              for (int i = 0; i <= NUM_LEDS; i++) {
               leds[i] = CRGB::Red;
             }
             effectTimer = 10;
           }break;
-          case 8: {//mole 2
+          case 8: {//notaMole
            for (int i = 0; i <= NUM_LEDS; i++) {
               leds[i] = CRGB::Green;
             }
