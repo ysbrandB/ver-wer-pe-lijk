@@ -27,8 +27,10 @@ float interval = 3000;
 int gameState = 1;
 boolean iAmPressed = false;
 int pressedThisGame = 0;
-int totalConnected=0;
-int randomMole=random(totalConnected);
+int totalConnected = 0;
+int randomMole = random(totalConnected);
+int whackTimer = millis();
+int whackInterval=5000;
 
 void transmissionComplete(uint8_t *receiver_mac, uint8_t transmissionStatus) {
   if (transmissionStatus == 0) {
@@ -62,11 +64,6 @@ void dataReceived(uint8_t *senderMac, uint8_t *data, uint8_t dataLength) {
       }
     }
   }
-
-//  Serial.print("pressed: ");
-//  Serial.println(packet.pressed);
-//  Serial.print("gameState: ");
-//  Serial.println(packet.gameState);
 }
 
 void setup() {
@@ -105,30 +102,32 @@ void loop() {
     packet.gameState = gameState;
     Serial.println("Connected:" + String(totalConnected));
     Serial.println("");
-    pressedThisGame=0;
+    pressedThisGame = 0;
     for (int i = 0; i < membersof(receivedMacAdresses); i++) {
       if (receivedMacAdresses[i] != NULL) {
         Serial.println("THIS ONE IS PRESSED " + String(receivedMacAdresses[i]));
-       
+
         pressedThisGame += 1;
-        receivedMacAdresses[i]="";
+        receivedMacAdresses[i] = "";
       }
     }
     updateGames();
 
     Serial.println("totalPressed:" + String(pressedThisGame));
-    Serial.println("gameState: "+String(gameState));
+    Serial.println("gameState: " + String(gameState));
     Serial.println("");
     totalConnected = 0;
+    Serial.println(membersof(receiverAddresses));
     for (int i = 0; i < membersof(receiverAddresses); i++) {
-      if(gameState==7 ||gameState==8){
-        if(i==randomMole){
-          packet.gameState==7;
-          }
-          else{
-            packet.gameState==8;
-            }
+      Serial.print(i);
+      if (gameState == 7 || gameState == 8) {
+        if (i == randomMole) {
+          packet.gameState = 7;
         }
+        else {
+          packet.gameState = 8;
+        }
+      }
       esp_now_send(receiverAddresses[i], (uint8_t *) &packet, sizeof(packet));
     }
   }
@@ -159,9 +158,9 @@ void updateSerial() {
       //Add null character to string
       message[message_pos] = '\0';
       gameState = atoi(message);
-      if(gameState==8 || gameState==7){
-        randomMole=random(totalConnected);
-        }
+      if (gameState == 8 || gameState == 7) {
+        randomMole = random(totalConnected);
+      }
       Serial.println(gameState);
       //Reset for the next message
       message_pos = 0;
@@ -170,15 +169,20 @@ void updateSerial() {
 }
 
 
-void updateGames(){
-  if(gameState==2 && pressedThisGame==totalConnected){
-    gameState=4;//rainbow effect
-   }
-   if(gameState==7 || gameState==8){
-    Serial.println("MODE 7!");
-    if(pressedThisGame>=1){
+void updateGames() {
+  if (gameState == 2 && pressedThisGame == totalConnected) {
+    gameState = 4; //rainbow effect
+  }
+  if (gameState == 7 || gameState == 8) {
+    if (pressedThisGame >= 1) {
       Serial.println("GROTER!");
-      gameState=4;
+      gameState = 4;
+    }
+    else {
+      if (millis() - whackTimer >= whackInterval) {
+        whackTimer = millis();
+        randomMole=random(totalConnected); 
       }
     }
   }
+}

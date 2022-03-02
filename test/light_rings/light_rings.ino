@@ -189,11 +189,6 @@ void updateLedColors() {
         }break;
       case 6: { //rainbowfun
           if (iAmPressed) {
-            if (effectSwitch) {
-              effectSwitch = false;
-            } else {
-              effectSwitch = true;
-            }
             for (int i = 0; i < NUM_LEDS; i++) {
               if (effectSwitch) {
                 leds[i] = CRGB::White;
